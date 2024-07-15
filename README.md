@@ -20,9 +20,9 @@ Conference
 
 
 ## Description   
-This project explores the use of deep learning to predict a person's age from facial images. Leveraging the VGG16 model, a convolutional neural network pre-trained on the ImageNet dataset, we apply transfer learning to classify age groups.
+This project aims to develop machine learning model to predict the binding affinity of small molecules to specific protein targets.
 
-- **Motivation:** To gain deeper insights into computer vision and its applications, and to contribute to advancements in the field.
+- **Motivation:** This is a critical step in drug development for the pharmaceutical industry that would pave the way for more accurate drug discovery
 - **Why:** Human age estimation based on facial features demonstrates the remarkable capability of our brains.Translating this human skill to machines using deep learning techniques can unlock numerous applications including 
   - **Personalized Marketing:** Tailoring advertisements based on the predicted age group.
   - **Enhanced Security:** Improved surveillance by recognizing age-specific behaviors.
@@ -33,6 +33,11 @@ This project explores the use of deep learning to predict a person's age from fa
   - **1:** How to preprocess image data
   - **2:** How to build a convolutional neural network from scratch (it not worked for this task by the way :) )
   - **3:** How to train a pre-trained model using transfer learning techniques.
+
+## Background
+Small molecule drugs are chemicals that interact with cellular protein machinery and affect the functions of this machinery in some way. Often, drugs are meant to inhibit the activity of single protein targets, and those targets are thought to be involved in a disease process. A classic approach to identify such candidate molecules is to physically make them, one by one, and then expose them to the protein target of interest and test if the two interact. This can be a fairly laborious and time-intensive process.
+
+
 
  ## Methodology
 
