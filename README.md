@@ -16,7 +16,11 @@ Conference
 </div>
 
 
+
+
 ![images (11)](https://github.com/user-attachments/assets/cd1090d6-261f-4765-929a-7a5273f749fe)
+
+Initially motivated by a kaggle competition <a href="https://www.kaggle.com/competitions/leash-BELKA">NeurIPS 2024 - Predict New Medicines with BELKA</a>
 
 
 ## Description   
@@ -37,85 +41,120 @@ Small molecule drugs are chemicals that interact with cellular protein machinery
 ## Dataset
 To evaluate potential search methods in small molecule chemistry, <a href="https://www.leash.bio/">Leash Biosciences</a> physically tested some 133M small molecules for their ability to interact with one of three protein targets using DNA-encoded chemical library (DEL) technology. This dataset, the <b>Big Encoded Library for Chemical Assessment (BELKA)</b>, provides an excellent opportunity to develop predictive models that may advance drug discovery.
 
-
-
- ## Methodology
+## Methodology
 
 1. **Data Visualization:**
-   - We used the UTKFace dataset, comprising over 20,000 facial images with annotations of age, gender, and ethnicity.
-   - Images were visualized to understand the dataset distribution and the embedded labels.
+   - We used the BELKA dataset
+   - Chemical proteins were visualized using rdkit.
+   - Here you can see a visualization of sample chemical structures of the dataset
+
+<img width="1143" alt="molecules " src="https://github.com/user-attachments/assets/4e42dc86-e4d1-4e4c-bb8b-db83c90019ff">
+
 
 2. **Data Preprocessing:**
-   - Images were resized to 224x224 pixels to match the VGG16 model requirements.
-   - Normalization was performed to scale pixel values between 0 and 1.
-   - Age labels were extracted and categorized into five age groups: 0–24, 25–49, 50–74, 75–99, and 100–124.
+   - Chemical compounds were in SMILES format.To use them in Graph Neural Networks need to convert them into Graph data object.
+   - Use <a href="https://deepchem.io/">DeepChem</a> library to convert SMILES formatted chemical compound into data object with chemical data.
+   - In simple terms,<a href="https://deepchem.io/">DeepChem</a>'s <b>MolGraphConvFeaturizer</b> converts SMILES into object with the atoms and its featutes plus bonds and bonding features.
+   - Finally we convert SMILES formatted molecule into a graph object using <a href="https://pytorch-geometric.readthedocs.io/en/latest/">Pytorch Geometric</a> Custom Dataset Class.
+   - Code used to convert data
+   ```python
+	import os.path as osp
+	import torch
+	from torch_geometric.data import Dataset
+	import pandas as pd
+	import deepchem as dc
+	from tqdm import tqdm
+	from rdkit import Chem 
+	import numpy as np
 
-3. **Transfer Learning with VGG16:**
-   - The VGG16 model, pre-trained on ImageNet, was used as the base model.
-   - The model's layers were frozen, and additional dense layers with dropout and L2 regularization were added.
-   - The final output layer was designed to classify images into the five age groups using softmax activation.
+	class MoleculeDataset(Dataset):
+    		def __init__(self, root, filename, test=False, transform=None, pre_transform=None):
+        		"""
+        		root = Where the dataset should be stored. This folder is split
+        		into raw_dir (downloaded dataset) and processed_dir (processed data). 
+        		"""
+        		self.test = test
+        		self.filename = filename
+        		super(MoleculeDataset, self).__init__(root, transform, pre_transform)
+    
+   		@property
+    		def raw_file_names(self):
+        		""" If this file exists in raw_dir, the download is not triggered.
+            			(The download func. is not implemented here)  
+        		"""
+        		return self.filename
 
-4. **Model Training:**
-   - The model was compiled with categorical cross-entropy loss and the Adam optimizer.
-   - Early stopping and model checkpoint callbacks were employed to monitor validation performance and prevent overfitting.
-   - The model was trained on 90% of the data and validated on the remaining 10%.
+		@property
+    		def processed_file_names(self):
+        		""" If these files are found in raw_dir, processing is skipped"""
+        		self.data = pd.read_csv(self.raw_paths[0]).reset_index()
 
-5. **Model Evaluation:**
-   - The model's performance was evaluated on the test set, assessing accuracy and loss.
-   - Training and validation loss curves were plotted to visualize the learning process and detect potential overfitting.
+        		if self.test:
+            			return [f'data_test_{i}.pt' for i in list(self.data.index)]
+        		else:
+            			return [f'data_{i}.pt' for i in list(self.data.index)]
+    
+    		def download(self):
+        		pass
 
-6. **Age Prediction:**
-   - A function was developed to predict the age group of new images.
-   - The function preprocesses the input image, makes predictions using the trained model, and maps the predictions to age groups.
+    		def process(self):
+        		self.data = pd.read_csv(self.raw_paths[0]).reset_index()
+        		featurizer = dc.feat.MolGraphConvFeaturizer(use_edges=True)
+        		for index, row in tqdm(self.data.iterrows(), total=self.data.shape[0]):
+            			# Featurize molecule
+            			mol = Chem.MolFromSmiles(row["molecule_smiles"])
+            			f = featurizer._featurize(mol)
+            			data = f.to_pyg_graph()
+            			if not self.test:  # Only assign label if not a test set
+                			data.y = self._get_label(row["binds"])
+            				data.smiles = row["molecule_smiles"]
+            			if self.test:
+                			torch.save(data, 
+                    				osp.join(self.processed_dir, 
+                             				f'data_test_{index}.pt'))
+            			else:
+                			torch.save(data, 
+                    				osp.join(self.processed_dir, 
+                             				f'data_{index}.pt'))
 
-## Visualization of the model used
+   		def _get_label(self, label):
+        		label = np.asarray([label])
+        		return torch.tensor(label, dtype=torch.int64)
+
+    		def len(self):
+        		return self.data.shape[0]
+
+    		def get(self, idx):
+        		""" - Equivalent to __getitem__ in pytorch
+            		- Is not needed for PyG's InMemoryDataset
+        		"""
+        			if self.test:
+            				data = torch.load(osp.join(self.processed_dir, 
+                             			f'data_test_{idx}.pt'))
+   				else:
+   					data = torch.load(osp.join(self.processed_dir, 
+                             				f'data_{idx}.pt'))        
+        			return data
+
+
+## Visualization of the model using tensorboard
 ![Jul15_09-05-34_kumaras-MacBook-Air local](https://github.com/user-attachments/assets/650cf8a6-1382-4070-b75a-05d98bafba8d)
 
 ## Code Implementation
 
-The project's code is organized in a Jupyter notebook, which includes detailed steps for data preprocessing, model training, and evaluation. Key libraries used in the project include:
+The project's code is organized in a Jupyter notebook. Key libraries used in the project include:
 
-- `numpy` for numerical operations
-- `matplotlib` for data visualization
-- `cv2` (OpenCV) for image processing
-- `keras` for building and training the neural network
-- `visualkeras` for visualizing the model architecture
-
-## Example Usage
-
-To test the trained model on new images, follow these steps:
-
-1. **Preprocess the Image:**
-   ```python
-   def image_preprocessing(img_path):
-       img = cv2.imread(img_path)
-       resized_img = cv2.resize(img, (224, 224))
-       normalized_img = resized_img / 255.0
-       return normalized_img
-2.**Predict Age Group:**
- ```python
-  def predict_on_image(img_path):
-    preprocessed_img = image_preprocessing(img_path)
-    reshaped_img = np.reshape(preprocessed_img, (1, 224, 224, 3))
-    predicted_labels_probabilities = model.predict(reshaped_img)
-    class_index = np.argmax(predicted_labels_probabilities)
-    age_class = str(class_index * 25) + "-" + str((class_index + 1) * 25 - 1)
-    return age_class
-```
-
-3.**Visualize Prediction:**
- ```python
-  new_sample_img_rgb = cv2.cvtColor(new_sample_img_bgr, cv2.COLOR_BGR2RGB)
-  cv2.putText(new_sample_img_rgb, predicted_age_class, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-  plt.imshow(new_sample_img_rgb)
-```
+- `PyTorch Geometric` for train graph neural networks
+- `rdkit` for chemical data processing
+- `DeepChem` for converting SMILES into chemical data objects
 
 ## Credits
 
 We used several third-party assets and tutorials, including:
 
-- [Tensorflow](https://www.tensorflow.org/api_docs)
-- [VGG16 Model](https://keras.io/api/applications/vgg/)
+- [Pytorch Geometric](https://pytorch-geometric.readthedocs.io/en/latest/)
+- [DeepChem](https://deepchem.io/)
+- [RDkit](https://www.rdkit.org/)
 
 ## License
 
