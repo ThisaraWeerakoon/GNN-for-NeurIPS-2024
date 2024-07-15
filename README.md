@@ -23,19 +23,19 @@ Conference
 This project aims to develop machine learning model to predict the binding affinity of small molecules to specific protein targets.
 
 - **Motivation:** This is a critical step in drug development for the pharmaceutical industry that would pave the way for more accurate drug discovery
-- **Why:** Human age estimation based on facial features demonstrates the remarkable capability of our brains.Translating this human skill to machines using deep learning techniques can unlock numerous applications including 
-  - **Personalized Marketing:** Tailoring advertisements based on the predicted age group.
-  - **Enhanced Security:** Improved surveillance by recognizing age-specific behaviors.
-  - **Medical Applications:** Age estimation for planning treatments and predicting health trends.
+- **Why:** There are likely effective treatments for human ailments hiding in that chemical space, and better methods to find such treatments are desirable to us all.Searching chemical space by inference using this type of computational models rather than running laboratory experiments contribute to advances in small molecule chemistry used to accelerate drug discovery.
 
-- **Problem Solved:** Tackling complex computer vision task of classify persons age from his/her facial image.Applying transfer learning to tackle above problem.
-- **What We Learned:**
-  - **1:** How to preprocess image data
-  - **2:** How to build a convolutional neural network from scratch (it not worked for this task by the way :) )
-  - **3:** How to train a pre-trained model using transfer learning techniques.
+- **Problem Solved:** The number of chemicals in druglike space has been estimated to be 10^60, a space far too big to physically search.ML approaches suggest it might be possible to search chemical space by inference using well-trained computational models rather than running laboratory experiments.
+- **What I Learned:**
+  - **1:** Fundamentals of Graph Neural Networks
+  - **2:** Working with chemical data including chemical specifications like <b>Simplified Molecular-Input Line-Entry System (SMILES)</b>
+  - **3:** Working with analytical database like <b>DuckDB</b>
 
 ## Background
 Small molecule drugs are chemicals that interact with cellular protein machinery and affect the functions of this machinery in some way. Often, drugs are meant to inhibit the activity of single protein targets, and those targets are thought to be involved in a disease process. A classic approach to identify such candidate molecules is to physically make them, one by one, and then expose them to the protein target of interest and test if the two interact. This can be a fairly laborious and time-intensive process.
+
+## Dataset
+To evaluate potential search methods in small molecule chemistry, <a href="https://www.leash.bio/">Leash Biosciences</a> physically tested some 133M small molecules for their ability to interact with one of three protein targets using DNA-encoded chemical library (DEL) technology. This dataset, the <b>Big Encoded Library for Chemical Assessment (BELKA)</b>, provides an excellent opportunity to develop predictive models that may advance drug discovery.
 
 
 
