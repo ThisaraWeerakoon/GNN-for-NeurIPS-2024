@@ -69,7 +69,7 @@ To evaluate potential search methods in small molecule chemistry, <a href="https
    - The function preprocesses the input image, makes predictions using the trained model, and maps the predictions to age groups.
 
 ## Visualization of the model used
-![0_cV6Ciyjm0pdebW_2-ezgif com-webp-to-jpg-converter](https://github.com/ThisaraWeerakoon/Age-Classification/assets/83450623/e3bf3776-6907-4240-987d-5707abcb6ee9)
+![Jul15_09-05-34_kumaras-MacBook-Air local](https://github.com/user-attachments/assets/650cf8a6-1382-4070-b75a-05d98bafba8d)
 
 ## Code Implementation
 
